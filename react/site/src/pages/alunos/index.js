@@ -1,4 +1,6 @@
 import { ToastContainer, toast } from 'react-toastify';
+import { confirmAlert } from 'react-confirm-alert'; // Import
+import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
 import 'react-toastify/dist/ReactToastify.css';
 import LoadingBar from 'react-top-loading-bar'
 import Cabecalho from '../../components/cabecalho'
@@ -31,27 +33,13 @@ export default function Index() {
     async function inserir(){
         loading.current.continuousStart();
         if(idAlterando === 0){
-            if (nome === "" || chamada === "" || curso === "" || turma === "")
-            toast.dark("Há campos obrigatórios vazios")
-            else{
-
-                if(chamada <= 0)
-                toast.dark("A chamada deve ser positiva")
-                else{
-
-                    let validar = await api.listar();
-                    console.log()
-
-                    let r = await api.inserir(nome, chamada, curso, turma);
-                    if(r.erro) 
-                    toast(r.erro)
-                    else 
-                    toast("aluno inserido!"); 
-                    
-
-                    
-                }
-            }
+            
+            let r = await api.inserir(nome, chamada, curso, turma);
+            if(r.erro) 
+            toast(r.erro)
+            else 
+            toast("aluno inserido!"); 
+           
         } else {
             let r = await api.alterar(idAlterando, nome, chamada, curso, turma);
             toast('dados alterados')
@@ -71,9 +59,30 @@ export default function Index() {
     }
 
     async function remover(id){
-        let r = await api.remover(id);
-        toast ("aluno removido");
-        listar();
+        confirmAlert(
+            {
+            title: 'Remover aluno',
+            message: `Tem certeza que deseja remover o aluno ${id}?`,
+            buttons: [
+                {
+                    label: 'Sim',
+                    onClick: async () => {
+                        let r = await api.remover(id);
+                        if (r.erro)
+                            toast(`${r.erro}`);
+                        else{
+                        toast ("aluno removido");
+                        listar();
+                        }
+                    }
+                },
+                {
+                    label: "Não"
+                }
+
+            ]
+        });
+     
     }
 
     async function editar(item){
